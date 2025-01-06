@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pdd.activity.mapper.ActivityInfoMapper">
+
+<!--    查询正在参与活动的商品（sku）-->
+    <select id="selectSkuIdListExist" resultType="java.lang.Long">
+        SELECT sku.sku_id
+        FROM activity_info info
+                 INNER JOIN activity_sku sku ON sku.activity_id = info.id
+                 and sku.is_deleted = 0
+        <where>
+            <if test="skuIdList != null">
+                and sku.sku_id IN 
+                <foreach collection="skuIdList" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+          AND NOW() BETWEEN info.start_time and info.end_time
+    </select>
+    
+    <resultMap id="ActivityRuleMap" type="com.pdd.model.activity.ActivityRule" autoMapping="true"></resultMap>
+<!--    根据skuId进行查询，查询sku对应的活动的规则-->
+    <select id="findActivityRule" resultMap="ActivityRuleMap">
+        select info.activity_type as activityType,
+               rule.id,rule.activity_id,rule.condition_amount,rule.condition_num,rule.benefit_amount,rule.benefit_discount
+        from activity_info info
+        inner join activity_sku sku on info.id = sku.activity_id and sku.is_deleted = 0
+        inner join activity_rule rule on info.id = rule.activity_id and rule.is_deleted = 0
+        where sku_id = #{skuId}
+        and now() between info.start_time and info.end_time
+        order by rule.condition_amount desc, rule.condition_num desc
+    </select>
+</mapper>
