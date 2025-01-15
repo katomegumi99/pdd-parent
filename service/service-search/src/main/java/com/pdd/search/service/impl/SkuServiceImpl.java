@@ -16,11 +16,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -40,6 +42,8 @@ public class SkuServiceImpl implements SkuService {
     @Autowired
     private ActivityFeignClient activityFeignClient;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
     // 上架商品
     @Override
     public void upperSku(Long skuId) {
@@ -142,5 +146,22 @@ public class SkuServiceImpl implements SkuService {
         }
 
         return pageModel;
+    }
+
+    // 更新商品热度
+    @Override
+    public void incrHotScore(Long skuId) {
+        String key = "hotScore";
+        // 在redis中保存数据，每点击一次商品详情则该商品的热度+1
+        Double hotScore = redisTemplate.opsForZSet().incrementScore(key, "skuId" + skuId, 1);
+
+        // 热度在es中更新的规则
+        if (hotScore % 10 == 0) {
+            // 更新 es
+            Optional<SkuEs> optional = skuRepository.findById(skuId);
+            SkuEs skuEs = optional.get();
+            skuEs.setHotScore(Math.round(hotScore));
+            skuRepository.save(skuEs);
+        }
     }
 }

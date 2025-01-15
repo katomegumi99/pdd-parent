@@ -20,6 +20,7 @@ import com.pdd.vo.product.SkuInfoVo;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -269,5 +270,30 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
         List<SkuInfo> skuInfoList = skuInfoPage.getRecords();
 
         return skuInfoList;
+    }
+
+    // 根据skuId获取skuInfo
+    @Override
+    public SkuInfoVo getSkuInfoVo(Long skuId) {
+        SkuInfoVo skuInfoVo = new SkuInfoVo();
+
+        // 获取基本信息
+        SkuInfo skuInfo = baseMapper.selectById(skuId);
+
+        // 获取海报信息
+        List<SkuPoster> posterList = skuPosterService.getPosterListBySkuId(skuId);
+
+        // 获取属性值
+        List<SkuAttrValue> attrValueList = skuAttrValueService.getAttrValueListBySkuId(skuId);
+
+        // 获取图片信息
+        List<SkuImage> imageList = skuImagesService.getImageListBySkuId(skuId);
+
+        BeanUtils.copyProperties(skuInfo, skuInfoVo);
+        skuInfoVo.setSkuPosterList(posterList);
+        skuInfoVo.setSkuAttrValueList(attrValueList);
+        skuInfoVo.setSkuImagesList(imageList);
+
+        return skuInfoVo;
     }
 }

@@ -12,14 +12,14 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://localhost:3306/shequ-product?characterEncoding=utf-8&useSSL=false
-    username: # 数据库用户名
-    password: # 数据库密码
+    username:
+    password:
 
   rabbitmq:
-    host: # rabbitmq访问地址
+    host:
     port: 5672
-    username: # 用户名
-    password: # 密码
+    username: guest
+    password: 123456
     publisher-confirm-type: CORRELATED  #发布确认模式，消息是否被成功发送到交换机
     publisher-returns: true
     listener:
@@ -32,7 +32,6 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
 
-# 阿里云oss配置
 #aliyun:
 #  endpoint:
 #  keyid:

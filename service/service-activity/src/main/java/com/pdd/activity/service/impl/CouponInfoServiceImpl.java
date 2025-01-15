@@ -17,6 +17,7 @@ import com.pdd.vo.activity.CouponRuleVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import sun.awt.IconInfo;
 
 import java.util.HashMap;
 import java.util.List;
@@ -127,9 +128,9 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
         List<CouponRange> couponRangeList = couponRuleVo.getCouponRangeList();
         for (CouponRange couponRange : couponRangeList) {
             couponRange.setCouponId(couponRuleVo.getCouponId());
+            // 插入数据
             couponRangeMapper.insert(couponRange);
         }
-
     }
 
     // 根据关键字获取sku列表，活动使用
@@ -139,5 +140,16 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
         wrapper.like(CouponInfo::getCouponName, keyword);
         List<CouponInfo> list = baseMapper.selectList(wrapper);
         return list;
+    }
+
+    // 根据skuId和userId查询优惠券信息
+    @Override
+    public List<CouponInfo> findCouponInfoList(Long skuId, Long userId) {
+        // 远程调用：根据skuId查询skuInfo
+        SkuInfo skuInfo = productFeignClient.getSkuInfo(skuId);
+        // 根据条件查询优惠券
+        List<CouponInfo> couponInfoList = baseMapper.selectCouponInfoList(skuId, skuInfo.getCategoryId(), userId);
+
+        return couponInfoList;
     }
 }

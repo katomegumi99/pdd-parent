@@ -12,7 +12,7 @@ spring:
   main:
     allow-bean-definition-overriding: true #当遇到同样名字的时候，是否允许覆盖注册
   redis:
-    host: # redis 访问地址
+    host:
     port: 6379
     database: 0
     timeout: 1800000

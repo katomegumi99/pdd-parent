@@ -23,12 +23,17 @@
 <!--    根据skuId进行查询，查询sku对应的活动的规则-->
     <select id="findActivityRule" resultMap="ActivityRuleMap">
         select info.activity_type as activityType,
-               rule.id,rule.activity_id,rule.condition_amount,rule.condition_num,rule.benefit_amount,rule.benefit_discount
+               rule.id,
+               rule.activity_id,
+               rule.condition_amount,
+               rule.condition_num,
+               rule.benefit_amount,
+               rule.benefit_discount
         from activity_info info
-        inner join activity_sku sku on info.id = sku.activity_id and sku.is_deleted = 0
-        inner join activity_rule rule on info.id = rule.activity_id and rule.is_deleted = 0
+                 inner join activity_sku sku on info.id = sku.activity_id and sku.is_deleted = 0
+                 inner join activity_rule rule on info.id = rule.activity_id and rule.is_deleted = 0
         where sku_id = #{skuId}
-        and now() between info.start_time and info.end_time
+          and now() between info.start_time and info.end_time
         order by rule.condition_amount desc, rule.condition_num desc
     </select>
 </mapper>

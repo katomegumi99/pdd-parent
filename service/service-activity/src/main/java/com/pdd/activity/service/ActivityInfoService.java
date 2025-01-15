@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.pdd.model.activity.ActivityInfo;
+import com.pdd.model.activity.ActivityRule;
 import com.pdd.model.product.SkuInfo;
 import com.pdd.vo.activity.ActivityRuleVo;
 
@@ -35,4 +36,10 @@ public interface ActivityInfoService extends IService<ActivityInfo> {
 
     // 根据skuId列表获取促销信息
     Map<Long, List<String>> findActivity(List<Long> skuIdList);
+
+    // 根据skuId获取营销数据和优惠券信息
+    Map<String, Object> findActivityAndCoupon(Long skuId, Long userId);
+
+    // 根据skuId 获取活动规则数据
+    List<ActivityRule> findActivityRuleListBySkuId(Long skuId);
 }

@@ -43,4 +43,6 @@ public interface SkuInfoService extends IService<SkuInfo> {
     // 获取新人专享的商品数据
     List<SkuInfo> findNewPersonSkuInfoList();
 
+    // 获取skuInfo
+    SkuInfoVo getSkuInfoVo(Long skuId);
 }

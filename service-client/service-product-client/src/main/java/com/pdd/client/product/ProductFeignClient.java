@@ -2,6 +2,7 @@ package com.pdd.client.product;
 
 import com.pdd.model.product.SkuInfo;
 import com.pdd.model.product.Category;
+import com.pdd.vo.product.SkuInfoVo;
 import com.pdd.vo.user.LeaderAddressVo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,4 +40,8 @@ public interface ProductFeignClient {
     // 获取新人专享的商品数据
     @GetMapping("/api/product/inner/findNewPersonSkuInfoList")
     public List<SkuInfo> findNewPersonSkuInfoList();
+
+    // 根据skuId获取sku信息
+    @GetMapping("/api/product/inner/getSkuInfoVo/{skuId}")
+    public SkuInfoVo getSkuInfoVo(@PathVariable("skuId") Long skuId);
 }

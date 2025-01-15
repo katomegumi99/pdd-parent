@@ -4,6 +4,7 @@ import com.pdd.model.product.Category;
 import com.pdd.model.product.SkuInfo;
 import com.pdd.product.service.CategoryService;
 import com.pdd.product.service.SkuInfoService;
+import com.pdd.vo.product.SkuInfoVo;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -71,4 +72,9 @@ public class ProductInnerController {
         return skuInfoList;
     }
 
+    // 根据skuId获取sku信息
+    @GetMapping("inner/getSkuInfoVo/{skuId}")
+    public SkuInfoVo getSkuInfoVo(@PathVariable("skuId") Long skuId) {
+        return skuInfoService.getSkuInfoVo(skuId);
+    }
 }

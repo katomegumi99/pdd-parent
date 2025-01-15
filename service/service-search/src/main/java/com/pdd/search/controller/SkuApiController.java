@@ -11,6 +11,7 @@ import com.pdd.search.service.SkuService;
 import com.pdd.vo.search.SkuEsQueryVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -62,5 +63,12 @@ public class SkuApiController {
         Pageable pageable = PageRequest.of(page - 1, limit);
         Page<SkuEs> pageModel = skuService.search(pageable, skuEsQueryVo);
         return Result.ok(pageModel);
+    }
+
+    // 更新商品热度
+    @GetMapping("inner/incrHotScore/{skuId}")
+    public Boolean incrHotScore(@PathVariable("skuId") Long skuId) {
+        skuService.incrHotScore(skuId);
+        return true;
     }
 }

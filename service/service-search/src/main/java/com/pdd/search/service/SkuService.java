@@ -19,4 +19,7 @@ public interface SkuService {
 
     // 根据商品分类查询商品
     Page<SkuEs> search(Pageable pageable, SkuEsQueryVo skuEsQueryVo);
+
+    // 更新商品热度
+    void incrHotScore(Long skuId);
 }
