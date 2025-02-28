@@ -12,11 +12,11 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://localhost:3306/shequ-product?characterEncoding=utf-8&useSSL=false
-    username:
-    password:
+    username: root
+    password: 123
 
   rabbitmq:
-    host:
+    host: 192.168.31.26
     port: 5672
     username: guest
     password: 123456
@@ -28,12 +28,25 @@ spring:
         concurrency: 3
         acknowledge-mode: manual   #消费端手动确认
 
+  redis:
+    host: 192.168.31.27
+    port: 6379
+    database: 0
+    timeout: 1800000
+    password:
+    lettuce:
+      pool:
+        max-active: 20 #最大连接数
+        max-wait: -1    #最大阻塞等待时间(负数表示没限制)
+        max-idle: 5    #最大空闲
+        min-idle: 0     #最小空闲
+
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
 
-#aliyun:
-#  endpoint:
-#  keyid:
-#  keysecret:
-#  bucketname:
+aliyun:
+  endpoint:
+  keyid:
+  keysecret:
+  bucketname:

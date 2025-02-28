@@ -3,6 +3,9 @@ package com.pdd.product.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.pdd.common.constant.RedisConst;
+import com.pdd.common.exception.PddException;
+import com.pdd.common.result.ResultCodeEnum;
 import com.pdd.model.product.SkuAttrValue;
 import com.pdd.model.product.SkuImage;
 import com.pdd.model.product.SkuInfo;
@@ -17,10 +20,14 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pdd.product.service.SkuPosterService;
 import com.pdd.vo.product.SkuInfoQueryVo;
 import com.pdd.vo.product.SkuInfoVo;
+import com.pdd.vo.product.SkuStockLockVo;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -52,6 +59,13 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
 
     @Autowired
     private RabbitService rabbitService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    @Autowired
+    private RedissonClient redissonClient;
+
 
     @Override
     public IPage<SkuInfo> selectPageSkuInfo(Page<SkuInfo> pageParam, SkuInfoQueryVo skuInfoQueryVo) {
@@ -295,5 +309,83 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
         skuInfoVo.setSkuImagesList(imageList);
 
         return skuInfoVo;
+    }
+
+    // 验证和锁定库存
+    @Override
+    public Boolean checkAndLock(List<SkuStockLockVo> skuStockLockVoList, String orderNo) {
+        // 1 判断 skuStockLockVoList 是否为空
+        if (CollectionUtils.isEmpty(skuStockLockVoList)) {
+            throw new PddException(ResultCodeEnum.DATA_ERROR);
+        }
+
+        // 2 遍历 skuStockLockVoList 集合得到每个商品，验证库存并锁定库存，具备原子性
+        for (SkuStockLockVo skuStockLockVo : skuStockLockVoList) {
+            this.checkLock(skuStockLockVo); // 假设checkLock会设置skuStockLockVo的isLock状态
+        }
+
+        // 3 只要有一个商品锁定失败，所有锁定成功的商品都解锁
+        boolean flag = skuStockLockVoList.stream().anyMatch(skuStockLockVo -> !skuStockLockVo.getIsLock());
+        if (flag) {
+            // 获取所有锁定成功的商品，遍历解锁库存
+            skuStockLockVoList.stream().filter(skuStockLockVo -> skuStockLockVo.getIsLock()).forEach(skuStockLockVo -> {
+                // 解锁库存
+                baseMapper.unlockStock(skuStockLockVo.getSkuId(), skuStockLockVo.getSkuNum());
+            });
+            // 响应锁定状态
+            return false;
+        }
+
+        // 4 如果所有商品都锁定成功了，redis则缓存相关数据，为了方便后面解锁和减库存
+        this.redisTemplate.opsForValue().set(RedisConst.STOCK_INFO + orderNo, skuStockLockVoList);
+
+        return true;
+    }
+
+    // 扣减库存成功，更新订单状态
+    @Override
+    public void minusStock(String orderNo) {
+        // 从redis中获取锁定库存的信息
+        List<SkuStockLockVo> skuStockLockVoList =
+                (List<SkuStockLockVo>) redisTemplate.opsForValue().get(RedisConst.STOCK_INFO + orderNo);
+
+        if (CollectionUtils.isEmpty(skuStockLockVoList)) {
+            return;
+        }
+
+        // 遍历集合，得到每个对象，进行扣减库存操作
+        skuStockLockVoList.forEach(skuStockLockVo -> {
+            baseMapper.minusStock(skuStockLockVo.getSkuId(), skuStockLockVo.getSkuNum());
+        });
+
+        // 删除 redis 数据
+        redisTemplate.delete(RedisConst.STOCK_INFO + orderNo);
+    }
+
+    // 验证库存并锁定
+    private void checkLock(SkuStockLockVo skuStockLockVo) {
+        //公平锁，就是保证客户端获取锁的顺序，跟他们请求获取锁的顺序，是一样的。
+        // 公平锁需要排队
+        // ，谁先申请获取这把锁，
+        // 谁就可以先获取到这把锁，是按照请求的先后顺序来的。
+        RLock rLock = this.redissonClient.getFairLock(RedisConst.SKUKEY_PREFIX + skuStockLockVo.getSkuId());
+        rLock.lock();
+
+        try {
+            // 验库存：查询，返回的是满足要求的库存列表
+            SkuInfo skuInfo = baseMapper.checkStock(skuStockLockVo.getSkuId(), skuStockLockVo.getSkuNum());
+            // 如果没有一个仓库满足要求，这里就验库存失败
+            if (skuInfo == null) {
+                skuStockLockVo.setIsLock(false);
+                return;
+            }
+            // 反之则进行锁库存操作
+            Integer rows = baseMapper.lockStock(skuStockLockVo.getSkuId(), skuStockLockVo.getSkuNum());
+            if (rows == 1) {
+                skuStockLockVo.setIsLock(true);
+            }
+        } finally {
+            rLock.unlock();
+        }
     }
 }

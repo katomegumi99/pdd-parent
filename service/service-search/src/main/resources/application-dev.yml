@@ -15,10 +15,10 @@ spring:
     rest:
       uris: http://localhost:9200
   rabbitmq:
-    host:
+    host: 192.168.31.26
     port: 5672
-    username:
-    password:
+    username: guest
+    password: 123456
     publisher-confirm-type: CORRELATED
     publisher-returns: true
     listener:
@@ -27,7 +27,7 @@ spring:
         concurrency: 3
         acknowledge-mode: manual
   redis:
-    host:
+    host: 192.168.31.27
     port: 6379
     database: 0
     timeout: 1800000

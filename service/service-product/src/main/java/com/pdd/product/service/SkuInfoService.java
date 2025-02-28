@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.pdd.model.product.SkuInfo;
 import com.pdd.vo.product.SkuInfoQueryVo;
 import com.pdd.vo.product.SkuInfoVo;
+import com.pdd.vo.product.SkuStockLockVo;
 
 import java.util.List;
 
@@ -45,4 +46,10 @@ public interface SkuInfoService extends IService<SkuInfo> {
 
     // 获取skuInfo
     SkuInfoVo getSkuInfoVo(Long skuId);
+
+    // 验证和锁定库存
+    Boolean checkAndLock(List<SkuStockLockVo> skuStockLockVoList, String orderNo);
+
+    // 扣减库存成功，更新订单状态
+    void minusStock(String orderNo);
 }

@@ -3,7 +3,9 @@ package com.pdd.client.product;
 import com.pdd.model.product.SkuInfo;
 import com.pdd.model.product.Category;
 import com.pdd.vo.product.SkuInfoVo;
+import com.pdd.vo.product.SkuStockLockVo;
 import com.pdd.vo.user.LeaderAddressVo;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,4 +46,9 @@ public interface ProductFeignClient {
     // 根据skuId获取sku信息
     @GetMapping("/api/product/inner/getSkuInfoVo/{skuId}")
     public SkuInfoVo getSkuInfoVo(@PathVariable("skuId") Long skuId);
+
+    // 验证和锁定库存
+    @ApiOperation(value = "锁定库存")
+    @PostMapping("/api/product/inner/checkAndLock/{orderNo}")
+    public Boolean checkAndLock(@RequestBody List<SkuStockLockVo> skuStockLockVoList, @PathVariable("orderNo") String orderNo);
 }
