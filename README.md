@@ -37,14 +37,14 @@
 
 ### 图片演示
 
-![](E:\pdd-parent\image\后台管理登录页面.png)
+![](https://cdn.jsdelivr.net/gh/katomegumi99/cdn@main/images/pdd-parent/后台管理登录页面.png)
 
-![](E:\pdd-parent\image\后台管理模块.png)
+![](https://cdn.jsdelivr.net/gh/katomegumi99/cdn@main/images/pdd-parent/后台管理模块.png)
 
-![](E:\pdd-parent\image\小程序登录页.png)
+![](https://cdn.jsdelivr.net/gh/katomegumi99/cdn@main/images/pdd-parent/小程序登录页.png)
 
-![](E:\pdd-parent\image\小程序首页.png)
+![](https://cdn.jsdelivr.net/gh/katomegumi99/cdn@main/images/pdd-parent/小程序首页.png)
 
-![](E:\pdd-parent\image\小程序商品分类模块.png)
+![](https://cdn.jsdelivr.net/gh/katomegumi99/cdn@main/images/pdd-parent/小程序商品分类模块.png)
 
-![](E:\pdd-parent\image\小程序订单列表模块.png)
+![](https://cdn.jsdelivr.net/gh/katomegumi99/cdn@main/images/pdd-parent/小程序订单列表模块.png)
